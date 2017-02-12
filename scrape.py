@@ -18,14 +18,14 @@ browser = webdriver.Chrome('./chromedriver')
 baseurl = "https://www.opentable.com/"
 
 # How many is the table for | date | name of month | time of meal
-peopleCount = 2
+peopleCount = 6
 dayOfMonth = 19
 month = "February"
-mealTime = "7:30 PM"
+mealTime = "12:30 PM"
 
 # set up restaurantResults dictionary
 globalResults = {"allOptions" : []}
-restaurants = ["cava-mezze-dc", "masa-14", "zengo-washington-dc"]
+restaurants = ["founding-farmers-dc", "cava-mezze-dc", "masa-14", "cava-mezze-dc"]
 
 # BEGIN RESTAURANT LOOP ###
 # each restaurant will get a result object
@@ -83,18 +83,19 @@ for currentPage in restaurants:
         # Pull list of result times
         # each valid element added to result["availableTimes]
         humanDelay()
-        selectResultList = browser.find_elements_by_css_selector("ul.dtp-results-times>li")
-        for webElement in selectResultList:
-            if webElement.text != " ":
-                result["availableTimes"].append(webElement.text)
+        if browser.find_elements_by_css_selector("ul.dtp-results-times>li") != None:
+            selectResultList = browser.find_elements_by_css_selector("ul.dtp-results-times>li")
+            for webElement in selectResultList:
+                if webElement.text != " ":
+                    result["availableTimes"].append(webElement.text)
 
-        # add to results
-        globalResults["allOptions"].append(result)
+            # add to results
+            globalResults["allOptions"].append(result)
 
-        # WRITE RESULTS TO JSON ###
-        # store these in a JSON file called results.json - each iteration in case program fails
-        with open('results' + month + str(dayOfMonth) + '.json', 'w') as f:
-            json.dump(globalResults, f)
+            # WRITE RESULTS TO JSON ###
+            # store these in a JSON file called results.json - each iteration in case program fails
+            with open('results' + month + str(dayOfMonth) + '.json', 'w') as f:
+                json.dump(globalResults, f)
 
 # Final validation it all worked
 print(globalResults)

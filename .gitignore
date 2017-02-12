@@ -2,3 +2,4 @@
 chromedriver
 venv-tablescrape
 .DS_Store
+restaurants.txt
