@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC # available sin
 
 # TODO: Human Delay
 def humanDelay():
-    sleep(random.randint(1, 3))
+    sleep(random.randint(1, 30)/10)
 
 # Set up web driver as browser
 browser = webdriver.Chrome('./chromedriver')
@@ -76,11 +76,12 @@ for currentPage in restaurants:
     # "No tables are available within 2.5 hours of your 11:30 AM request."
     try:
         element = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "ul.dtp-results-times"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, "span#dtp-results>div.content-section-body"))
         )
     finally:
+        # TODO: need to make this work for both available and unavailable tables (something like ul.dtp-results-times>li = TRUE, then...)
         # Pull list of result times
-        # timesList is local, then gets added to result["availableTimes""]
+        # each valid element added to result["availableTimes]
         humanDelay()
         selectResultList = browser.find_elements_by_css_selector("ul.dtp-results-times>li")
         for webElement in selectResultList:
@@ -90,11 +91,11 @@ for currentPage in restaurants:
         # add to results
         globalResults["allOptions"].append(result)
 
-# WRITE RESULTS TO JSON ###
-# store these in a JSON file called results.json
-with open('results' + month + str(dayOfMonth) + '.json', 'w') as f:
-    json.dump(globalResults, f)
+        # WRITE RESULTS TO JSON ###
+        # store these in a JSON file called results.json - each iteration in case program fails
+        with open('results' + month + str(dayOfMonth) + '.json', 'w') as f:
+            json.dump(globalResults, f)
 
+# Final validation it all worked
 print(globalResults)
-
 browser.close()
