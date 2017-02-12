@@ -1,0 +1,4 @@
+.vscode
+chromedriver
+venv-tablescrape
+.DS_Store
