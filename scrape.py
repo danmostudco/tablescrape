@@ -41,7 +41,6 @@ restaurants = ["founding-farmers-dc", "cava-mezze-dc", "masa-14", "cava-mezze-dc
 
 
 
-
 #############
 ## FUNCTIONS FOR AUTOMATING THE SELECTION PROCESS
 #############
@@ -90,9 +89,7 @@ def ripTimesFromPage():
             EC.presence_of_element_located((By.CSS_SELECTOR, "span#dtp-results>div.content-section-body"))
         )
     finally:
-        # TODO: need to make this work for both available and unavailable tables (something like ul.dtp-results-times>li = TRUE, then...)
-        # Pull list of result times
-        # each valid element added to result["availableTimes]
+        # Pull list of result times, each valid element added to result["availableTimes]
         humanDelay()
         if browser.find_elements_by_css_selector("ul.dtp-results-times>li") != None:
             selectResultList = browser.find_elements_by_css_selector("ul.dtp-results-times>li")
@@ -100,16 +97,26 @@ def ripTimesFromPage():
                 if webElement.text != " ":
                     result["availableTimes"].append(webElement.text)
 
-            # add to results
+            # add to results ONLY if results array gets filled
             humanDelay()
-            globalResults["allOptions"].append(result)
+            if result["availableTimes"] != []:
+                globalResults["allOptions"].append(result)
 
-            # WRITE RESULTS TO JSON ###
-            # store these in a JSON file called results.json - each iteration in case program fails
-            with open('results' + month + str(dayOfMonth) + '.json', 'w') as f:
-                json.dump(globalResults, f)
+                # WRITE RESULTS TO JSON ###
+                # store these in a JSON file called results.json - each iteration in case program fails
+                with open('results' + month + str(dayOfMonth) + '.json', 'w') as f:
+                    json.dump(globalResults, f)
 
-
+def backUpRip():
+    if browser.find_elements_by_css_selector("ul.dtp-results-times>li") == []:
+        print("checking " + timesOfDay[mealTimeIndex + 5] + " since we didn't have times for " + timesOfDay[mealTimeIndex + 5])
+        try:
+            newTime = timesOfDay[mealTimeIndex + 5]
+            selectTime(newTime)
+            findATable = browser.find_element_by_css_selector("input[type='submit']").click()       
+            ripTimesFromPage()
+        except:
+            print("no results for this one!")
 
 
 
@@ -136,6 +143,8 @@ for currentPage in restaurants:
 
     # GET TIMES FROM PAGE
     ripTimesFromPage()
+    # backup runs once
+    backUpRip()
 
 browser.close()
 print("Done")
