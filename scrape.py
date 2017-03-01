@@ -26,9 +26,9 @@ timesOfDay = ["12:00 AM", "12:30 AM", "1:00 AM", "1:30 AM", "2:00 AM", "2:30 AM"
 #############
 ## How many is the table for | date | name of month | time of meal | Results
 #############
-peopleCount = 6
-dayOfMonth = 28
-month = "February"
+peopleCount = 2
+dayOfMonth = 25
+month = "April"
 mealTime = "12:30 PM"
 # Get the index of the time and month in case next available of either is needed
 mealTimeIndex = timesOfDay.index(mealTime)
@@ -53,7 +53,7 @@ def selectPeopleCount(numberOfPeople):
     humanDelay()
     selectPeopleCount = browser.find_element_by_css_selector('option[value="' + str(numberOfPeople) + '"]').click()
 
-def selectMonthAndDay(monthSelected, daySelected):
+def selectMonth(monthSelected):
     # Open Month Picker
     openMonthPicker = browser.find_element_by_css_selector(".date-picker").click()
     # Confirm Picker Month
@@ -62,7 +62,11 @@ def selectMonthAndDay(monthSelected, daySelected):
     selectPickerMonth = browser.find_element_by_css_selector(".picker__month")
     if selectPickerMonth.text == monthSelected:
         print("looking in the month of " + monthSelected)
+    else:
+        selectNextMonth = browser.find_element_by_css_selector(".picker__nav--next").click()
+        print("looking in the month of " + monthsOfYear[monthIndex + 1])
 
+def selectDay(daySelected):
     # Select Day of month
     humanDelay()
     selectDateList = browser.find_elements_by_css_selector("td[role='presentation']")
@@ -135,7 +139,8 @@ for currentPage in restaurants:
 
     # SELECTIONS HAPPEN HERE
     selectPeopleCount(peopleCount)
-    selectMonthAndDay(month, dayOfMonth)
+    selectMonth(month)
+    selectDay(dayOfMonth)
     selectTime(mealTime)
 
     # SUBMIT
