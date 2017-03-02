@@ -38,9 +38,6 @@ globalResults = {"allOptions" : []}
 restaurants = ["founding-farmers-dc", "cava-mezze-dc", "masa-14", "cava-mezze-dc"]
 
 
-
-
-
 #############
 ## FUNCTIONS FOR AUTOMATING THE SELECTION PROCESS
 #############
@@ -53,27 +50,51 @@ def selectPeopleCount(numberOfPeople):
     humanDelay()
     selectPeopleCount = browser.find_element_by_css_selector('option[value="' + str(numberOfPeople) + '"]').click()
 
+def openDatePicker():
+    openMonthPicker = browser.find_element_by_css_selector(".date-picker").click() 
+
 def selectMonth(monthSelected):
-    # Open Month Picker
-    openMonthPicker = browser.find_element_by_css_selector(".date-picker").click()
-    # Confirm Picker Month
-    # TODO: if not this month, select and go to next month
     humanDelay()
-    selectPickerMonth = browser.find_element_by_css_selector(".picker__month")
-    if selectPickerMonth.text == monthSelected:
-        print("looking in the month of " + monthSelected)
-    else:
-        selectNextMonth = browser.find_element_by_css_selector(".picker__nav--next").click()
-        print("looking in the month of " + monthsOfYear[monthIndex + 1])
+    # get current month from OpenTable
+    pickerMonth = browser.find_element_by_css_selector(".picker__month")
+
+    pickerMonthIndex = monthsOfYear.index(pickerMonth.text)
+    monthSelectedIndex = monthsOfYear.index(monthSelected)
+
+    # if both line up, just move on
+    if pickerMonthIndex == monthSelectedIndex:
+        return
+    
+    # if the pickerMonth is past the desiredMonth, click back button and retry
+    if pickerMonthIndex > monthSelectedIndex:
+        browser.find_element_by_css_selector(".picker__nav--prev").click()
+        selectMonth(monthSelected)
+
+    # if the pickerMonth is before the desiredMonth, click forward and retry
+    if pickerMonthIndex < monthSelectedIndex:
+        browser.find_element_by_css_selector(".picker__nav--next").click()
+        selectMonth(monthSelected)
+
 
 def selectDay(daySelected):
     # Select Day of month
+    # create a list in case there are multiple results
+    multipleSameDates = []
     humanDelay()
     selectDateList = browser.find_elements_by_css_selector("td[role='presentation']")
     for webElement in selectDateList:
         if webElement.text == str(daySelected):
-            webElement.click()
-            break
+            multipleSameDates.append(webElement)
+
+    # run logic to ensure you get correct date
+    if daySelected > 15 and len(multipleSameDates) > 1:
+        multipleSameDates[-1].click()
+
+    if daySelected > 15 and len(multipleSameDates) == 1:
+        multipleSameDates[0].click()
+
+    if daySelected <= 15:
+        multipleSameDates[0].click()
 
 def selectTime(time):
     # Select time
@@ -139,6 +160,7 @@ for currentPage in restaurants:
 
     # SELECTIONS HAPPEN HERE
     selectPeopleCount(peopleCount)
+    openDatePicker()
     selectMonth(month)
     selectDay(dayOfMonth)
     selectTime(mealTime)
