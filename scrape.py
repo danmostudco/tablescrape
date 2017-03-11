@@ -26,16 +26,16 @@ timesOfDay = ["12:00 AM", "12:30 AM", "1:00 AM", "1:30 AM", "2:00 AM", "2:30 AM"
 #############
 ## How many is the table for | date | name of month | time of meal | Results
 #############
-peopleCount = 2
-dayOfMonth = 25
-month = "April"
-mealTime = "12:30 PM"
+peopleCount = 4
+dayOfMonth = 29
+month = "March"
+mealTime = "6:30 PM"
 # Get the index of the time and month in case next available of either is needed
 mealTimeIndex = timesOfDay.index(mealTime)
 monthIndex = monthsOfYear.index(month)
 # set up restaurantResults dictionary
 globalResults = {"allOptions" : []}
-restaurants = ["founding-farmers-dc", "cava-mezze-dc", "masa-14", "cava-mezze-dc"]
+restaurants = ["tico-washington", "takoda-restaurant-and-beer-garden", "founding-farmers-dc", "farmers-fishers-bakers", "el-centro-df-on-14th-street", "el-centro-df-georgetown", "bistro-bohem", "le-diplomate", "cava-mezze-dc", "masa-14", "the-pig", "the-partisan"]
 
 
 #############
@@ -47,8 +47,14 @@ def humanDelay():
 
 def selectPeopleCount(numberOfPeople):
     # Select number of people (1 - 20)
-    humanDelay()
-    selectPeopleCount = browser.find_element_by_css_selector('option[value="' + str(numberOfPeople) + '"]').click()
+    try:
+        element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.party-size-picker"))
+        )
+    finally:    
+        print("people detected read to roll")
+        humanDelay()
+        selectPeopleCount = browser.find_element_by_css_selector('option[value="' + str(numberOfPeople) + '"]').click()
 
 def openDatePicker():
     openMonthPicker = browser.find_element_by_css_selector(".date-picker").click() 
@@ -134,7 +140,7 @@ def ripTimesFromPage():
 
 def backUpRip():
     if browser.find_elements_by_css_selector("ul.dtp-results-times>li") == []:
-        print("checking " + timesOfDay[mealTimeIndex + 5] + " since we didn't have times for " + timesOfDay[mealTimeIndex + 5])
+        print("checking " + timesOfDay[mealTimeIndex] + " since we didn't have times for " + timesOfDay[mealTimeIndex + 5])
         try:
             newTime = timesOfDay[mealTimeIndex + 5]
             selectTime(newTime)
@@ -157,21 +163,29 @@ for currentPage in restaurants:
 
     # go to store page
     browser.get(str(baseurl + currentPage))
+    sleep(7)
 
-    # SELECTIONS HAPPEN HERE
-    selectPeopleCount(peopleCount)
-    openDatePicker()
-    selectMonth(month)
-    selectDay(dayOfMonth)
-    selectTime(mealTime)
+    try:
+        element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".dtp-picker.initialised"))
+        )
+        print("initialize detected read to roll")
+    finally:
+        # SELECTIONS HAPPEN HERE
+        openDatePicker()
+        selectPeopleCount(peopleCount)
+        openDatePicker()
+        selectMonth(month)
+        selectDay(dayOfMonth)
+        selectTime(mealTime)
 
-    # SUBMIT
-    findATable = browser.find_element_by_css_selector("input[type='submit']").click()
+        # SUBMIT
+        findATable = browser.find_element_by_css_selector("input[type='submit']").click()
 
-    # GET TIMES FROM PAGE
-    ripTimesFromPage()
-    # backup runs once
-    backUpRip()
+        # GET TIMES FROM PAGE
+        ripTimesFromPage()
+        # backup runs once
+        backUpRip()
 
 browser.close()
 print("Done")
